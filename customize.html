@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customize Your Bouquet - Floraly</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tangerine:wght@700&family=Macondo&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Macondo', cursive;
+            background-image: url('./Images/bg.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        body::-webkit-scrollbar {
+            width: 0;
+        }
+
+        body {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-family: 'Tangerine', cursive;
+            font-size: clamp(60px, 12vw, 120px);
+            color: #000000;
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+            letter-spacing: 1px;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .action-button {
+            padding: 12px 28px;
+            font-family: 'Macondo', cursive;
+            font-size: clamp(14px, 2vw, 18px);
+            color: #000000;
+            background: rgba(238, 144, 189, 0.3);
+            border: 2px solid rgba(238, 144, 207, 0.5);
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(238, 144, 230, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .action-button:hover {
+            transform: translateY(-3px);
+            background: rgba(238, 144, 189, 0.5);
+            box-shadow: 0 12px 40px 0 rgba(238, 144, 230, 0.3);
+            border-color: rgba(238, 144, 207, 0.7);
+        }
+
+        .bouquet-container {
+            position: relative;
+            width: clamp(350px, 70vw, 700px);
+            height: clamp(450px, 65vh, 650px);
+            margin: 0 auto;
+        }
+
+        .greenery {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 500px;
+            height: auto;
+            z-index: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .flowers-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 100;
+        }
+
+        .flower-in-bouquet {
+            position: absolute;
+            width: clamp(80px, 16vw, 150px);
+            height: auto;
+            transition: transform 0.2s ease;
+            filter: drop-shadow(3px 3px 6px rgba(0, 0, 0, 0.3));
+            cursor: move;
+            pointer-events: auto;
+            user-select: none;
+            touch-action: none;
+        }
+
+        .flower-in-bouquet:hover {
+            filter: drop-shadow(4px 4px 8px rgba(0, 0, 0, 0.5));
+            z-index: 1000 !important;
+        }
+
+        .flower-in-bouquet.dragging {
+            opacity: 0.7;
+            z-index: 9999 !important;
+        }
+
+        @media (max-width: 768px) {
+            .bouquet-container {
+                width: 90vw;
+                height: 55vh;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Floraly <span
+                style="font-size: clamp(20px, 4vw, 32px); font-family: 'Macondo', cursive; font-weight: normal;">- Drag
+                and arrange flowers</span></h1>
+    </header>
+
+    <div class="bouquet-container">
+        <img src="Images/g1.png" alt="Greenery" class="greenery" id="greeneryImg">
+        <div class="flowers-layer" id="flowersLayer"></div>
+    </div>
+
+    <div class="button-container">
+        <button class="action-button" id="greeneryBtn">Change Greenery</button>
+        <a href="build.html" class="action-button">Back</a>
+        <button class="action-button" id="nextBtn">Next</button>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const flowersLayer = document.getElementById('flowersLayer');
+            const greeneryImg = document.getElementById('greeneryImg');
+            const greeneryBtn = document.getElementById('greeneryBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            let currentGreenery = 1;
+            let flowers = [];
+
+            const savedGreenery = localStorage.getItem('currentGreenery');
+            if (savedGreenery) {
+                currentGreenery = parseInt(savedGreenery);
+                greeneryImg.src = `Images/g${currentGreenery}.png`;
+            }
+
+            function loadFlowers() {
+                const saved = localStorage.getItem('selectedFlowers');
+
+                if (!saved || saved === 'null' || saved === '{}' || saved === '[]') {
+                    flowersLayer.innerHTML = '<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; padding: 20px; color: #000; font-size: 18px; background: rgba(255,255,255,0.8); border-radius: 15px;">No flowers selected.<br>Please go back and select flowers.</div>';
+                    return;
+                }
+
+                try {
+                    const selectedFlowers = JSON.parse(saved);
+                    flowers = [];
+
+                    Object.keys(selectedFlowers).forEach(flowerName => {
+                        const count = selectedFlowers[flowerName];
+                        if (count > 0) {
+                            for (let i = 0; i < count; i++) {
+                                flowers.push({
+                                    name: flowerName,
+                                    img: `Images/${flowerName}.png`
+                                });
+                            }
+                        }
+                    });
+
+                    if (flowers.length === 0) {
+                        flowersLayer.innerHTML = '<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; padding: 20px; color: #000; font-size: 18px; background: rgba(255,255,255,0.8); border-radius: 15px;">No flowers to display.<br>Please go back and select flowers.</div>';
+                        return;
+                    }
+
+                    const savedPositions = localStorage.getItem('flowerPositions');
+                    if (savedPositions) {
+                        try {
+                            const positions = JSON.parse(savedPositions);
+                            displayFlowersWithPositions(flowers, positions);
+                        } catch (e) {
+                            arrangeBouquet();
+                        }
+                    } else {
+                        arrangeBouquet();
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            }
+
+            function displayFlowersWithPositions(flowerArray, positions) {
+                flowersLayer.innerHTML = '';
+                const containerWidth = flowersLayer.offsetWidth;
+                const containerHeight = flowersLayer.offsetHeight;
+
+                flowerArray.forEach((flower, index) => {
+                    const img = document.createElement('img');
+                    img.src = flower.img;
+                    img.alt = flower.name;
+                    img.classList.add('flower-in-bouquet');
+
+                    const pos = positions[index];
+                    const leftPx = (pos.leftPercent / 100) * containerWidth;
+                    const topPx = (pos.topPercent / 100) * containerHeight;
+
+                    img.style.left = `${leftPx}px`;
+                    img.style.top = `${topPx}px`;
+                    img.style.transform = `translate(-50%, -50%) rotate(${pos.rotation}deg)`;
+                    img.style.zIndex = pos.zIndex;
+
+                    flowersLayer.appendChild(img);
+                });
+
+                enableDragging();
+            }
+
+            function arrangeBouquet() {
+                flowersLayer.innerHTML = '';
+                if (flowers.length === 0) return;
+
+                const containerWidth = flowersLayer.offsetWidth;
+                const containerHeight = flowersLayer.offsetHeight;
+                const centerX = containerWidth / 2;
+                const centerY = containerHeight * 0.7;
+                const spreadWidth = containerWidth * 0.5;
+                const spreadHeight = containerHeight * 0.5;
+
+                flowers.forEach((flower, index) => {
+                    const img = document.createElement('img');
+                    img.src = flower.img;
+                    img.alt = flower.name;
+                    img.classList.add('flower-in-bouquet');
+
+                    const ratio = flowers.length > 1 ? index / (flowers.length - 1) : 0.5;
+                    const angle = Math.PI * (ratio * 0.8 + 0.1);
+                    const radiusVariation = 0.6 + Math.random() * 0.4;
+                    const radius = Math.min(spreadWidth, spreadHeight) * radiusVariation;
+
+                    const x = centerX + Math.cos(angle) * radius + (Math.random() - 0.5) * 40;
+                    const y = centerY - Math.sin(angle) * radius * 0.8 + (Math.random() - 0.5) * 40;
+                    const rotation = ((angle - Math.PI / 2) * 180 / Math.PI) * 0.6 + (Math.random() - 0.5) * 25;
+
+                    img.style.left = `${x}px`;
+                    img.style.top = `${y}px`;
+                    img.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
+                    img.style.zIndex = 100 + Math.floor(ratio * 50);
+
+                    flowersLayer.appendChild(img);
+                });
+
+                enableDragging();
+            }
+
+            function enableDragging() {
+                const flowerElements = document.querySelectorAll('.flower-in-bouquet');
+
+                flowerElements.forEach(flower => {
+                    let isDragging = false;
+                    let startX, startY, flowerLeft, flowerTop;
+
+                    flower.addEventListener('mousedown', dragStart);
+                    document.addEventListener('mousemove', drag);
+                    document.addEventListener('mouseup', dragEnd);
+                    flower.addEventListener('touchstart', dragStart);
+                    document.addEventListener('touchmove', drag);
+                    document.addEventListener('touchend', dragEnd);
+
+                    function dragStart(e) {
+                        isDragging = true;
+                        flower.classList.add('dragging');
+                        flowerLeft = parseFloat(flower.style.left) || 0;
+                        flowerTop = parseFloat(flower.style.top) || 0;
+
+                        if (e.type === 'touchstart') {
+                            startX = e.touches[0].clientX;
+                            startY = e.touches[0].clientY;
+                        } else {
+                            startX = e.clientX;
+                            startY = e.clientY;
+                            e.preventDefault();
+                        }
+                    }
+
+                    function drag(e) {
+                        if (!isDragging) return;
+                        e.preventDefault();
+
+                        let currentX, currentY;
+                        if (e.type === 'touchmove') {
+                            currentX = e.touches[0].clientX;
+                            currentY = e.touches[0].clientY;
+                        } else {
+                            currentX = e.clientX;
+                            currentY = e.clientY;
+                        }
+
+                        flower.style.left = (flowerLeft + currentX - startX) + 'px';
+                        flower.style.top = (flowerTop + currentY - startY) + 'px';
+                    }
+
+                    function dragEnd() {
+                        if (isDragging) {
+                            isDragging = false;
+                            flower.classList.remove('dragging');
+                        }
+                    }
+                });
+            }
+
+            greeneryBtn.addEventListener('click', function () {
+                greeneryImg.style.opacity = '0';
+                setTimeout(() => {
+                    currentGreenery = (currentGreenery % 6) + 1;
+                    greeneryImg.src = `Images/g${currentGreenery}.png`;
+                    localStorage.setItem('currentGreenery', currentGreenery);
+                    greeneryImg.style.opacity = '1';
+                }, 300);
+            });
+
+            nextBtn.addEventListener('click', function () {
+                localStorage.setItem('currentGreenery', currentGreenery);
+
+                const flowerElements = document.querySelectorAll('.flower-in-bouquet');
+                const positions = [];
+                const containerWidth = flowersLayer.offsetWidth;
+                const containerHeight = flowersLayer.offsetHeight;
+
+                flowerElements.forEach(flower => {
+                    const transform = flower.style.transform;
+                    const rotateMatch = transform.match(/rotate\(([-\d.]+)deg\)/);
+                    const rotation = rotateMatch ? parseFloat(rotateMatch[1]) : 0;
+
+                    const leftPx = parseFloat(flower.style.left) || 0;
+                    const topPx = parseFloat(flower.style.top) || 0;
+
+                    positions.push({
+                        leftPercent: (leftPx / containerWidth) * 100,
+                        topPercent: (topPx / containerHeight) * 100,
+                        rotation: rotation,
+                        zIndex: parseInt(flower.style.zIndex) || 100
+                    });
+                });
+
+                localStorage.setItem('flowerPositions', JSON.stringify(positions));
+                console.log('Saved positions:', positions);
+                window.location.href = 'note.html';
+            });
+
+            loadFlowers();
+        });
+    </script>
+</body>
+
+</html>

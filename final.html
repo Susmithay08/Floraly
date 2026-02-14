@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Floraly — Your Bouquet</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tangerine:wght@700&family=Macondo&display=swap"
+        rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Macondo', cursive;
+            background: #f5f0e8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px 14px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.025'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        #confettiCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        header {
+            text-align: center;
+            z-index: 1;
+            animation: fadeSlideDown 0.8s ease forwards;
+            flex-shrink: 0;
+        }
+
+        h1 {
+            font-family: 'Tangerine', cursive;
+            font-size: clamp(60px, 10vw, 105px);
+            color: #2c1a0e;
+            line-height: 1;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-family: 'Macondo', cursive;
+            font-style: italic;
+            font-size: clamp(12px, 1.8vw, 16px);
+            color: #7a5c44;
+            letter-spacing: 0.4px;
+            margin-top: 1px;
+        }
+
+        .stage {
+            position: relative;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            z-index: 1;
+            animation: fadeIn 1s ease 0.3s forwards;
+            opacity: 0;
+            flex-shrink: 0;
+        }
+
+        /* Soft circle — upper half only */
+        .stage::before {
+            content: '';
+            position: absolute;
+            width: clamp(260px, 44vw, 500px);
+            height: clamp(260px, 44vw, 500px);
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(235, 220, 195, 0.9) 0%, rgba(245, 235, 218, 0.45) 60%, transparent 100%);
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 0;
+        }
+
+        .bouquet-wrap {
+            position: relative;
+            width: clamp(320px, 60vw, 580px);
+            height: clamp(340px, 52vh, 520px);
+            z-index: 1;
+            /* pull down to overlap footer space so note shows */
+            margin-bottom: 0;
+        }
+
+        .greenery {
+            position: absolute;
+            bottom: 52px;
+            /* leave room for note card */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 75%;
+            max-width: 360px;
+            height: auto;
+            z-index: 1;
+        }
+
+        .flowers-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: calc(100% - 52px);
+            /* don't overlap note area */
+            z-index: 2;
+        }
+
+        .flower-in-bouquet {
+            position: absolute;
+            width: clamp(80px, 16vw, 150px);
+            height: auto;
+            filter: drop-shadow(3px 3px 6px rgba(0, 0, 0, 0.28));
+            pointer-events: none;
+        }
+
+        /* ── Note card: original style, bottom center ── */
+        .note-card {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%) rotate(-1.5deg);
+            width: clamp(200px, 38vw, 380px);
+            background: #fffdf7;
+            border: 1.5px solid #d4b896;
+            border-radius: 10px;
+            padding: 14px 16px 12px;
+            box-shadow: 3px 5px 18px rgba(100, 60, 20, 0.13), 0 1px 3px rgba(0, 0, 0, 0.06);
+            z-index: 3;
+        }
+
+        .note-card::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 36px;
+            height: 8px;
+            background: rgba(218, 170, 120, 0.5);
+            border-radius: 0 0 4px 4px;
+        }
+
+        .note-message {
+            font-family: 'Macondo', cursive;
+            font-size: clamp(10px, 1.4vw, 13px);
+            color: #3d2b1a;
+            line-height: 1.65;
+            word-break: break-word;
+            white-space: pre-wrap;
+        }
+
+        .note-signature {
+            font-family: 'Macondo', cursive;
+            font-style: italic;
+            font-size: clamp(9px, 1.2vw, 12px);
+            color: #7a5c44;
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px dashed #d4b896;
+            text-align: right;
+        }
+
+        footer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            z-index: 1;
+            animation: fadeSlideUp 0.8s ease 0.5s forwards;
+            opacity: 0;
+            flex-shrink: 0;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 14px;
+        }
+
+        .action-btn {
+            padding: 10px 28px;
+            font-family: 'Macondo', cursive;
+            font-size: clamp(12px, 1.6vw, 15px);
+            letter-spacing: 1.5px;
+            color: #2c1a0e;
+            background: rgba(255, 255, 255, 0.65);
+            border: 1.5px solid rgba(180, 130, 90, 0.45);
+            border-radius: 50px;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            box-shadow: 0 4px 16px rgba(180, 130, 90, 0.13);
+            transition: all 0.28s ease;
+            position: relative;
+            overflow: hidden;
+
+        }
+
+        .action-btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(238, 185, 140, 0.35), transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            border-color: rgba(180, 130, 90, 0.7);
+            box-shadow: 0 8px 24px rgba(180, 130, 90, 0.22);
+        }
+
+        .action-btn:hover::after {
+            opacity: 1;
+        }
+
+        .action-btn:active {
+            transform: translateY(0);
+        }
+
+        .action-btn.copied {
+            background: rgba(200, 240, 200, 0.7);
+            border-color: rgba(100, 180, 100, 0.5);
+        }
+
+        .byline {
+            font-family: 'Macondo', cursive;
+            font-style: italic;
+            font-size: clamp(10px, 1.3vw, 12px);
+            color: #a08060;
+        }
+
+        .byline a {
+            color: #7a5040;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(122, 80, 64, 0.35);
+            transition: border-color 0.2s;
+        }
+
+        .byline a:hover {
+            border-color: rgba(122, 80, 64, 0.8);
+        }
+
+        @keyframes fadeSlideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-16px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.97)
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1)
+            }
+        }
+
+        @media (max-width: 600px) {
+            .bouquet-wrap {
+                width: 90vw;
+                height: 46vh;
+            }
+
+            .note-card {
+                width: 84vw;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="confettiCanvas"></canvas>
+
+    <header>
+        <h1>Floraly</h1>
+        <p class="subtitle">Hi, I made this bouquet for you!</p>
+    </header>
+
+    <div class="stage">
+        <div class="bouquet-wrap">
+            <img src="Images/g1.png" alt="Greenery" class="greenery" id="greeneryImg">
+            <div class="flowers-layer" id="flowersLayer"></div>
+
+            <div class="note-card">
+                <div class="note-message" id="noteMessage"></div>
+                <div class="note-signature" id="noteSignature"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="btn-row">
+            <button class="action-btn" id="copyLinkBtn">Copy Link</button>
+            <button class="action-btn" id="shareBtn">Share</button>
+        </div>
+        <p class="byline">a tool by <a href="https://www.linkedin.com/in/susmithayeddula/" target="_blank"
+                rel="noopener">@susmitha</a></p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            // ── 1. Try to load bouquet data from URL param (shared link) ──
+            let bouquetData = null;
+            const urlParams = new URLSearchParams(window.location.search);
+            const encoded = urlParams.get('d');
+
+            if (encoded) {
+                try {
+                    bouquetData = JSON.parse(decodeURIComponent(escape(atob(encoded))));
+                } catch (e) {
+                    console.error('Failed to decode URL data:', e);
+                }
+            }
+
+            // ── 2. Fall back to localStorage (creator viewing their own bouquet) ──
+            if (!bouquetData) {
+                const savedFlowers = localStorage.getItem('selectedFlowers');
+                const savedMessage = localStorage.getItem('cardMessage');
+                if (!savedFlowers || !savedMessage) { window.location.href = 'build.html'; return; }
+                try {
+                    bouquetData = {
+                        flowers: JSON.parse(savedFlowers),
+                        positions: JSON.parse(localStorage.getItem('flowerPositions') || '[]'),
+                        greenery: localStorage.getItem('currentGreenery') || '1',
+                        message: savedMessage,
+                        signature: localStorage.getItem('cardSignature') || 'Secret Admirer'
+                    };
+                } catch (e) {
+                    window.location.href = 'build.html'; return;
+                }
+            }
+
+            // ── 3. Render bouquet ──
+            const greeneryImg = document.getElementById('greeneryImg');
+            greeneryImg.src = `Images/g${bouquetData.greenery || '1'}.png`;
+
+            const flowersLayer = document.getElementById('flowersLayer');
+
+            // Build flowers array from the flowers object {name: count}
+            const flowers = [];
+            Object.keys(bouquetData.flowers).forEach(name => {
+                const count = bouquetData.flowers[name];
+                for (let i = 0; i < count; i++) flowers.push({ name, img: `Images/${name}.png` });
+            });
+
+            if (bouquetData.positions && bouquetData.positions.length > 0) {
+                displayFlowers(flowers, bouquetData.positions);
+            }
+
+            function displayFlowers(flowers, positions) {
+                flowersLayer.innerHTML = '';
+                const cw = flowersLayer.offsetWidth;
+                const ch = flowersLayer.offsetHeight;
+                flowers.forEach((flower, i) => {
+                    const img = document.createElement('img');
+                    img.src = flower.img; img.alt = flower.name;
+                    img.classList.add('flower-in-bouquet');
+                    const pos = positions[i];
+                    if (!pos) return;
+                    img.style.left = `${(pos.leftPercent / 100) * cw}px`;
+                    img.style.top = `${(pos.topPercent / 100) * ch}px`;
+                    img.style.transform = `translate(-50%, -50%) rotate(${pos.rotation}deg)`;
+                    img.style.zIndex = pos.zIndex;
+                    flowersLayer.appendChild(img);
+                });
+            }
+
+            document.getElementById('noteMessage').textContent = bouquetData.message;
+            document.getElementById('noteSignature').textContent = '— ' + (bouquetData.signature || 'Secret Admirer');
+
+            // ── 4. Share buttons — use current URL (which already has ?d=... if from URL) ──
+            const copyLinkBtn = document.getElementById('copyLinkBtn');
+            const shareBtn = document.getElementById('shareBtn');
+
+            // Build the shareable URL: if we loaded from localStorage, generate the encoded URL for sharing
+            function getShareableURL() {
+                if (encoded) {
+                    // Already has ?d= param, share as-is
+                    return window.location.href;
+                } else {
+                    // Creator just finished — build the encoded URL for them to share
+                    try {
+                        const shareData = {
+                            flowers: bouquetData.flowers,
+                            positions: bouquetData.positions,
+                            greenery: bouquetData.greenery,
+                            message: bouquetData.message,
+                            signature: bouquetData.signature
+                        };
+                        const enc = btoa(unescape(encodeURIComponent(JSON.stringify(shareData))));
+                        return `${window.location.origin}${window.location.pathname}?d=${enc}`;
+                    } catch (e) {
+                        return window.location.href;
+                    }
+                }
+            }
+
+            copyLinkBtn.addEventListener('click', function () {
+                const url = getShareableURL();
+                navigator.clipboard.writeText(url).then(() => {
+                    copyLinkBtn.textContent = 'Copied!'; copyLinkBtn.classList.add('copied');
+                    setTimeout(() => { copyLinkBtn.textContent = 'Copy Link'; copyLinkBtn.classList.remove('copied'); }, 2000);
+                }).catch(() => {
+                    const el = document.createElement('textarea'); el.value = url;
+                    document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
+                    copyLinkBtn.textContent = 'Copied!'; copyLinkBtn.classList.add('copied');
+                    setTimeout(() => { copyLinkBtn.textContent = 'Copy Link'; copyLinkBtn.classList.remove('copied'); }, 2000);
+                });
+            });
+
+            shareBtn.addEventListener('click', function () {
+                const url = getShareableURL();
+                if (navigator.share) { navigator.share({ title: 'Floraly — A Bouquet For You', text: 'I made you a bouquet with Floraly 🌸', url: url }).catch(() => { }); }
+                else { copyLinkBtn.click(); }
+            });
+
+            /* Confetti */
+            const canvas = document.getElementById('confettiCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+
+            const COLORS = ['#f9a8d4', '#fbbf24', '#a78bfa', '#34d399', '#f87171', '#60a5fa', '#fb923c', '#e879f9', '#fde68a', '#86efac', '#fca5a5', '#c4b5fd'];
+            const SHAPES = ['circle', 'rect', 'triangle'];
+
+            class Particle {
+                constructor() { this.reset(); }
+                reset() {
+                    this.x = canvas.width / 2 + (Math.random() - 0.5) * canvas.width * 0.7; this.y = -10;
+                    this.size = Math.random() * 8 + 5;
+                    this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+                    this.shape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+                    this.speedX = (Math.random() - 0.5) * 3.5; this.speedY = Math.random() * 3 + 1.5;
+                    this.angle = Math.random() * Math.PI * 2; this.spin = (Math.random() - 0.5) * 0.18;
+                    this.life = 1; this.decay = Math.random() * 0.008 + 0.004;
+                    this.wobble = Math.random() * 0.12; this.wobbleSpeed = Math.random() * 0.06 + 0.02;
+                    this.wobbleAngle = Math.random() * Math.PI * 2;
+                }
+                update() {
+                    this.wobbleAngle += this.wobbleSpeed;
+                    this.x += this.speedX + Math.sin(this.wobbleAngle) * this.wobble;
+                    this.y += this.speedY; this.speedY += 0.045; this.speedX *= 0.995;
+                    this.angle += this.spin; this.life -= this.decay;
+                }
+                draw() {
+                    ctx.save(); ctx.globalAlpha = Math.max(0, this.life);
+                    ctx.translate(this.x, this.y); ctx.rotate(this.angle); ctx.fillStyle = this.color;
+                    if (this.shape === 'circle') { ctx.beginPath(); ctx.arc(0, 0, this.size / 2, 0, Math.PI * 2); ctx.fill(); }
+                    else if (this.shape === 'rect') { ctx.fillRect(-this.size / 2, -this.size / 4, this.size, this.size / 2); }
+                    else { ctx.beginPath(); ctx.moveTo(0, -this.size / 2); ctx.lineTo(this.size / 2, this.size / 2); ctx.lineTo(-this.size / 2, this.size / 2); ctx.closePath(); ctx.fill(); }
+                    ctx.restore();
+                }
+                isDead() { return this.life <= 0 || this.y > canvas.height + 40; }
+            }
+
+            let particles = [];
+            let startTime = null;
+            for (let i = 0; i < 120; i++) particles.push(new Particle());
+
+            function animate(ts) {
+                if (!startTime) startTime = ts;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                if (ts - startTime < 2800) { for (let i = 0; i < 3; i++) particles.push(new Particle()); }
+                particles = particles.filter(p => !p.isDead());
+                particles.forEach(p => { p.update(); p.draw(); });
+                if (particles.length > 0 || ts - startTime < 2800) requestAnimationFrame(animate);
+                else ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+            requestAnimationFrame(animate);
+        });
+    </script>
+
+</body>
+
+</html>

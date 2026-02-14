@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Write Your Message - Floraly</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tangerine:wght@700&family=Macondo&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100vh;
+            overflow: auto;
+        }
+
+        body {
+            font-family: 'Macondo';
+            background-image: url('./Images/bg.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        body::-webkit-scrollbar {
+            width: 0;
+        }
+
+        body {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-family: 'Tangerine', cursive;
+            font-size: clamp(60px, 12vw, 120px);
+            color: #000000;
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: clamp(18px, 3vw, 26px);
+            color: #000000;
+            margin-bottom: 30px;
+            text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.8);
+
+            letter-spacing: 1px;
+        }
+
+        .content-container {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .bouquet-preview {
+            position: relative;
+            width: clamp(250px, 40vw, 400px);
+            height: clamp(300px, 50vh, 500px);
+            flex-shrink: 0;
+        }
+
+        .greenery {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 350px;
+            height: auto;
+            z-index: 1;
+        }
+
+        .flowers-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 100;
+        }
+
+        .flower-in-bouquet {
+            position: absolute;
+            width: clamp(60px, 12vw, 100px);
+            height: auto;
+            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.2));
+            pointer-events: none;
+        }
+
+        .message-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid #000;
+            border-radius: 15px;
+            padding: 30px;
+            width: clamp(300px, 45vw, 500px);
+
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .message-card h2 {
+            font-family: 'Macondo', cursive;
+            font-size: clamp(16px, 3vw, 20px);
+            text-align: center;
+            margin-bottom: 20px;
+            color: #000;
+        }
+
+        .message-input {
+            width: 100%;
+            border: none;
+            outline: none;
+            font-family: 'Macondo', cursive;
+            font-size: clamp(14px, 2vw, 16px);
+            color: #666;
+            line-height: 1.8;
+            resize: none;
+            background: transparent;
+            padding: 10px;
+            overflow: hidden;
+            /* important */
+        }
+
+
+        .message-input::placeholder {
+            color: #999;
+        }
+
+        .signature {
+            text-align: right;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+        }
+
+        .signature-input {
+            width: 100%;
+            text-align: right;
+            border: none;
+            outline: none;
+            font-family: 'Macondo', cursive;
+            font-size: clamp(14px, 2vw, 16px);
+            color: #666;
+            background: transparent;
+            padding: 5px;
+        }
+
+        .signature-input::placeholder {
+            color: #999;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .action-button {
+            padding: 12px 28px;
+            font-family: 'Macondo', cursive;
+            font-size: clamp(14px, 2vw, 18px);
+            color: #000000;
+            background: rgba(238, 144, 189, 0.3);
+            border: 2px solid rgba(238, 144, 207, 0.5);
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(238, 144, 230, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .action-button:hover {
+            transform: translateY(-3px);
+            background: rgba(238, 144, 189, 0.5);
+            box-shadow: 0 12px 40px 0 rgba(238, 144, 230, 0.3);
+            border-color: rgba(238, 144, 207, 0.7);
+        }
+
+        @media (max-width: 768px) {
+            .content-container {
+                flex-direction: column;
+            }
+
+            .bouquet-preview {
+                width: 80vw;
+                height: 40vh;
+            }
+
+            .message-card {
+                width: 90vw;
+                min-height: 350px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Floraly</h1>
+    </header>
+
+    <p class="subtitle">Write the Card</p>
+
+    <div class="content-container">
+        <div class="bouquet-preview">
+            <img src="Images/g1.png" alt="Greenery" class="greenery" id="greeneryImg">
+            <div class="flowers-layer" id="flowersLayer"></div>
+        </div>
+
+        <div class="message-card">
+            <h2>Dear <span id="recipientPreview">Beloved</span>,</h2>
+
+            <textarea class="message-input" id="messageInput"
+                placeholder="I have so much to tell you, but only this much space on this card! Still, you must know..."
+                maxlength="500"></textarea>
+
+            <div class="signature">
+                Sincerely,<br>
+                <input type="text" class="signature-input" id="signatureInput" maxlength="50" autocomplete="off">
+
+            </div>
+        </div>
+    </div>
+
+    <div class="button-container">
+        <a href="customize.html" class="action-button">Back</a>
+        <button class="action-button" id="nextBtn">Next</button>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const flowersLayer = document.getElementById('flowersLayer');
+            const greeneryImg = document.getElementById('greeneryImg');
+            const messageInput = document.getElementById('messageInput');
+
+            // Clear any previously saved card content — note.html should always start fresh
+            localStorage.removeItem('cardMessage');
+            localStorage.removeItem('cardSignature');
+            // Auto resize textarea
+            function autoResizeTextarea(textarea) {
+                textarea.style.height = "auto";
+                textarea.style.height = textarea.scrollHeight + "px";
+            }
+
+            // Resize while typing
+            messageInput.addEventListener("input", function () {
+                autoResizeTextarea(this);
+            });
+
+            const signatureInput = document.getElementById('signatureInput');
+            // Default value behavior like textarea placeholder
+            if (!localStorage.getItem('cardSignature')) {
+                signatureInput.value = 'Secret Admirer';
+                signatureInput.style.color = '#999';
+            }
+
+            signatureInput.addEventListener('focus', function () {
+                if (this.value === 'Secret Admirer') {
+                    this.value = '';
+                    this.style.color = '#666';
+                }
+            });
+
+            signatureInput.addEventListener('blur', function () {
+                if (this.value.trim() === '') {
+                    this.value = 'Secret Admirer';
+                    this.style.color = '#999';
+                }
+            });
+
+            const nextBtn = document.getElementById('nextBtn');
+
+            function loadBouquet() {
+                const saved = localStorage.getItem('selectedFlowers');
+                if (!saved) {
+                    window.location.href = 'build.html';
+                    return;
+                }
+
+                const savedGreenery = localStorage.getItem('currentGreenery');
+                if (savedGreenery) {
+                    greeneryImg.src = `Images/g${savedGreenery}.png`;
+                }
+
+                const savedPositions = localStorage.getItem('flowerPositions');
+                console.log('Loaded positions:', savedPositions);
+
+                try {
+                    const selectedFlowers = JSON.parse(saved);
+                    let flowers = [];
+
+                    Object.keys(selectedFlowers).forEach(flowerName => {
+                        const count = selectedFlowers[flowerName];
+                        for (let i = 0; i < count; i++) {
+                            flowers.push({
+                                name: flowerName,
+                                img: `Images/${flowerName}.png`
+                            });
+                        }
+                    });
+
+                    if (savedPositions) {
+                        const positions = JSON.parse(savedPositions);
+                        displayFlowers(flowers, positions);
+                    } else {
+                        console.log('No saved positions, creating default');
+                    }
+                } catch (e) {
+                    console.error('Error loading bouquet:', e);
+                }
+            }
+
+            function displayFlowers(flowers, positions) {
+                flowersLayer.innerHTML = '';
+                const containerWidth = flowersLayer.offsetWidth;
+                const containerHeight = flowersLayer.offsetHeight;
+
+                console.log('Container size:', containerWidth, containerHeight);
+
+                flowers.forEach((flower, index) => {
+                    const img = document.createElement('img');
+                    img.src = flower.img;
+                    img.alt = flower.name;
+                    img.classList.add('flower-in-bouquet');
+
+                    const pos = positions[index];
+                    const leftPx = (pos.leftPercent / 100) * containerWidth;
+                    const topPx = (pos.topPercent / 100) * containerHeight + 40;
+
+                    console.log(`Flower ${index}: ${pos.leftPercent}% -> ${leftPx}px, ${pos.topPercent}% -> ${topPx}px`);
+
+                    img.style.left = `${leftPx}px`;
+                    img.style.top = `${topPx}px`;
+                    img.style.transform = `translate(-50%, -50%) rotate(${pos.rotation}deg)`;
+                    img.style.zIndex = pos.zIndex;
+
+                    flowersLayer.appendChild(img);
+                });
+            }
+
+
+
+            nextBtn.addEventListener('click', function () {
+                const message = messageInput.value.trim();
+                const signature = signatureInput.value.trim();
+
+                if (!message) {
+                    alert('Please write a message for your bouquet!');
+                    return;
+                }
+
+                localStorage.setItem('cardMessage', message);
+                localStorage.setItem('cardSignature', signature || 'Secret Admirer');
+
+                // Build the shareable data object from localStorage
+                const bouquetData = {
+                    flowers: JSON.parse(localStorage.getItem('selectedFlowers') || '{}'),
+                    positions: JSON.parse(localStorage.getItem('flowerPositions') || '[]'),
+                    greenery: localStorage.getItem('currentGreenery') || '1',
+                    message: message,
+                    signature: signature || 'Secret Admirer'
+                };
+
+                // Encode to Base64 URL param
+                try {
+                    const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(bouquetData))));
+                    window.location.href = `final.html?d=${encoded}`;
+                } catch (e) {
+                    // Fallback if encoding fails (very large data)
+                    window.location.href = 'final.html';
+                }
+            });
+
+            loadBouquet();
+        });
+    </script>
+</body>
+
+</html>

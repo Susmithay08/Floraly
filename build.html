@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Build Your Bouquet - Floraly</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tangerine:wght@700&family=Macondo&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Macondo', cursive;
+            background-image: url('./Images/bg.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            padding: 20px;
+        }
+
+        body::-webkit-scrollbar {
+            width: 0;
+        }
+
+        body {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-family: 'Tangerine', cursive;
+            font-size: clamp(60px, 12vw, 120px);
+            color: #000000;
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+            letter-spacing: 1px;
+        }
+
+        .instruction {
+            text-align: center;
+            font-size: clamp(16px, 2.5vw, 22px);
+            color: #000000;
+            margin-bottom: 30px;
+            text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.8);
+        }
+
+        .flower-gallery {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 10px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .flower-row {
+            display: flex;
+            gap: 20px;
+            padding: 10px 0;
+            justify-content: center;
+        }
+
+        .flower-item {
+            flex-shrink: 0;
+            width: 150px;
+            height: 150px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .flower-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            transition: all 0.3s ease;
+            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.1));
+        }
+
+        .flower-item:hover {
+            transform: translateY(-12px);
+        }
+
+        .info-card {
+            position: absolute;
+            bottom: -70px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 140px;
+            padding: 8px;
+            text-align: center;
+            border-radius: 15px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            opacity: 0;
+            pointer-events: none;
+            transition: 0.3s ease;
+        }
+
+        .flower-item:hover .info-card {
+            opacity: 1;
+        }
+
+        .info-card strong {
+            display: block;
+            font-size: 16px;
+            margin-bottom: 3px;
+        }
+
+        .badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: black;
+            color: white;
+            font-size: 12px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .next-button-container {
+            text-align: center;
+            margin-top: 25px;
+        }
+
+        .next-button {
+            display: inline-block;
+            padding: 10px 30px;
+            font-family: 'Macondo', cursive;
+            font-size: clamp(16px, 2.5vw, 20px);
+            color: #000000;
+            background: rgba(238, 144, 189, 0.3);
+            border: 2px solid rgba(238, 144, 207, 0.5);
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(238, 144, 230, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .next-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .next-button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .next-button:hover {
+            transform: translateY(-5px);
+            background: rgba(238, 144, 189, 0.5);
+            box-shadow: 0 12px 40px 0 rgba(238, 144, 230, 0.3);
+            border-color: rgba(238, 144, 207, 0.7);
+        }
+
+        .next-button:active {
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .flower-item {
+                width: 120px;
+                height: 120px;
+            }
+
+            .next-button {
+                padding: 10px 25px;
+            }
+        }
+
+        .selected-summary {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .summary-pill {
+            padding: 8px 18px;
+            border-radius: 30px;
+            border: 1.5px solid black;
+            font-size: 16px;
+            background: transparent;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Floraly</h1>
+    </header>
+
+    <p class="instruction">Pick as many flowers as you want for your bouquet</p>
+
+    <div class="flower-gallery">
+        <!-- First Row -->
+        <div class="flower-row">
+            <div class="flower-item" data-flower="appleblossom">
+                <img src="Images/appleblossom.png" alt="Apple Blossom">
+                <div class="info-card">
+                    <strong>Apple Blossom</strong>
+                    Hope · Sweetness
+                </div>
+            </div>
+
+            <div class="flower-item" data-flower="blackrose">
+                <img src="Images/blackrose.png" alt="Black Rose">
+                <div class="info-card">
+                    <strong>Black Rose</strong>
+                    Mystery · Power
+                </div>
+            </div>
+
+            <div class="flower-item" data-flower="crocus">
+                <img src="Images/crocus.png" alt="Crocus">
+                <div class="info-card">
+                    <strong>Crocus</strong>
+                    Youth · Cheer
+                </div>
+            </div>
+
+            <div class="flower-item" data-flower="daffodil">
+                <img src="Images/daffodil.png" alt="Daffodil">
+                <div class="info-card">
+                    <strong>Daffodil</strong>
+                    Renewal · Joy
+                </div>
+            </div>
+
+            <div class="flower-item" data-flower="daisy">
+                <img src="Images/daisy.png" alt="Daisy">
+                <div class="info-card">
+                    <strong>Daisy</strong>
+                    Innocent · Pure
+                </div>
+            </div>
+
+            <div class="flower-item" data-flower="hydrangea">
+                <img src="Images/hydrangea.png" alt="Hydrangea">
+                <div class="info-card">
+                    <strong>Hydrangea</strong>
+                    Grace · Gratitude
+                </div>
+            </div>
+
+            <div class="flower-item" data-flower="hydrangeas">
+                <img src="Images/hydrangeas.png" alt="Hydrangeas">
+                <div class="info-card">
+                    <strong>Hydrangeas</strong>
+                    Abundance · Bloom
+                </div>
+            </div>
+        </div>
+
+        <!-- Second Row -->
+        <div class="flower-row">
+            <div class="flower-item" data-flower="peony">
+                <img src="Images/peony.png" alt="Peony">
+                <div class="info-card">
+                    <strong>Peony</strong>
+                    Romance · Prosperity
+                </div>
+            </div>
+
+            <div class="flower-item" data-flower="poppy">
+                <img src="Images/poppy.png" alt="Poppy">
+                <div class="info-card">
+                    <strong>Poppy</strong>
+                    Peace · Remembrance
+                </div>
+            </div>
+
+            <div class="flower-item" data-flower="rose">
+                <img src="Images/rose.png" alt="Rose">
+                <div class="info-card">
+                    <strong>Rose</strong>
+                    Love · Passion
+                </div>
+            </div>
+
+            <div class="flower-item" data-flower="sunflower">
+                <img src="Images/sunflower.png" alt="Sunflower">
+                <div class="info-card">
+                    <strong>Sunflower</strong>
+                    Loyalty · Warmth
+                </div>
+            </div>
+
+            <div class="flower-item" data-flower="lavender">
+                <img src="Images/lavender.png" alt="Lavender">
+                <div class="info-card">
+                    <strong>Lavender</strong>
+                    Calm · Devotion
+                </div>
+            </div>
+
+            <div class="flower-item" data-flower="lily">
+                <img src="Images/lily.png" alt="Lily">
+                <div class="info-card">
+                    <strong>Lily</strong>
+                    Purity · Grace
+                </div>
+            </div>
+
+            <div class="flower-item" data-flower="lilly">
+                <img src="Images/lilly.png" alt="Lilly">
+                <div class="info-card">
+                    <strong>Lilly</strong>
+                    Elegance · Charm
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="selected-summary" id="selectedSummary"></div>
+
+    <div class="next-button-container">
+        <button class="next-button" id="clearBtn"
+            style="background: rgba(255, 100, 100, 0.3); border-color: rgba(255, 100, 100, 0.5); margin-right: 15px;">
+            <span>Clear All</span>
+        </button>
+        <button class="next-button" id="nextBtn">
+            <span>Next</span>
+        </button>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const flowerItems = document.querySelectorAll('.flower-item');
+            const summaryContainer = document.getElementById('selectedSummary');
+            const nextBtn = document.getElementById('nextBtn');
+            const clearBtn = document.getElementById('clearBtn');
+
+            let selectedFlowers = {};
+
+            // Check if we came from customize.html (back button)
+            const fromCustomize = document.referrer.includes('customize.html');
+
+            if (fromCustomize) {
+                // Load saved selections if coming back from customize
+                const saved = localStorage.getItem('selectedFlowers');
+                if (saved) {
+                    try {
+                        selectedFlowers = JSON.parse(saved);
+
+                        // Restore badges
+                        Object.keys(selectedFlowers).forEach(flowerName => {
+                            const item = document.querySelector(`[data-flower="${flowerName}"]`);
+                            if (item && selectedFlowers[flowerName] > 0) {
+                                const badge = document.createElement('div');
+                                badge.classList.add('badge');
+                                badge.innerText = selectedFlowers[flowerName];
+                                item.appendChild(badge);
+                            }
+                        });
+                    } catch (e) {
+                        selectedFlowers = {};
+                    }
+                }
+            } else {
+                // Fresh load - clear everything
+                localStorage.removeItem('selectedFlowers');
+                selectedFlowers = {};
+            }
+
+            updateSummary();
+
+            // Click flower → increase count
+            flowerItems.forEach(item => {
+                item.addEventListener('click', function () {
+                    const flowerName = this.dataset.flower;
+
+                    if (!selectedFlowers[flowerName]) {
+                        selectedFlowers[flowerName] = 1;
+
+                        const badge = document.createElement('div');
+                        badge.classList.add('badge');
+                        badge.innerText = 1;
+                        this.appendChild(badge);
+                    } else {
+                        selectedFlowers[flowerName] += 1;
+                        this.querySelector('.badge').innerText = selectedFlowers[flowerName];
+                    }
+
+                    saveToStorage();
+                    updateSummary();
+                });
+            });
+
+            // Update summary pills
+            function updateSummary() {
+                summaryContainer.innerHTML = '';
+
+                Object.keys(selectedFlowers).forEach(flower => {
+                    if (selectedFlowers[flower] <= 0) return;
+
+                    const pill = document.createElement('div');
+                    pill.classList.add('summary-pill');
+
+                    const flowerElement = document.querySelector(`[data-flower="${flower}"]`);
+                    const displayName = flowerElement
+                        ? flowerElement.querySelector('.info-card strong').innerText
+                        : flower;
+
+                    pill.innerText = `${displayName} x${selectedFlowers[flower]}`;
+
+                    pill.addEventListener('click', function (e) {
+                        e.stopPropagation();
+
+                        selectedFlowers[flower] -= 1;
+
+                        const badge = flowerElement ? flowerElement.querySelector('.badge') : null;
+
+                        if (selectedFlowers[flower] > 0) {
+                            if (badge) badge.innerText = selectedFlowers[flower];
+                        } else {
+                            delete selectedFlowers[flower];
+                            if (badge) badge.remove();
+                        }
+
+                        saveToStorage();
+                        updateSummary();
+                    });
+
+                    summaryContainer.appendChild(pill);
+                });
+            }
+
+            // Save to localStorage
+            function saveToStorage() {
+                const dataString = JSON.stringify(selectedFlowers);
+                localStorage.setItem('selectedFlowers', dataString);
+            }
+
+            // Next button
+            nextBtn.addEventListener('click', function () {
+                const total = Object.values(selectedFlowers).reduce((a, b) => a + b, 0);
+
+                if (total === 0) {
+                    alert('Please select at least one flower!');
+                    return;
+                }
+
+                saveToStorage();
+                window.location.href = 'customize.html';
+            });
+
+            // Clear All button
+            clearBtn.addEventListener('click', function () {
+                if (Object.keys(selectedFlowers).length === 0) {
+                    return;
+                }
+
+                if (confirm('Clear all selected flowers?')) {
+                    document.querySelectorAll('.badge').forEach(badge => badge.remove());
+                    selectedFlowers = {};
+                    localStorage.removeItem('selectedFlowers');
+                    updateSummary();
+                }
+            });
+
+        });
+    </script>
+
+</body>
+
+</html>
